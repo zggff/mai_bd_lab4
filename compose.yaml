@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./init_scripts/postgres.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./data:/data/
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydatabase"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:26.3
+    container_name: clickhouse_db
+    environment:
+      CLICKHOUSE_USER: user
+      CLICKHOUSE_PASSWORD: password
+    volumes:
+      - ./init_scripts/clickhouse.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./data/:/var/lib/clickhouse/user_files/
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8123/ || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
