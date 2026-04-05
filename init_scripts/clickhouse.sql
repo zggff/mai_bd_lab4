@@ -55,7 +55,7 @@ ORDER BY (id);
 
 INSERT INTO raw_data
 SELECT
-    id,
+    id + (toInt64(extract(_file, ' \((\d+)\)')) * 1000) AS id,
     customer_first_name,
     customer_last_name,
     customer_age,
@@ -75,9 +75,9 @@ SELECT
     product_price,
     product_quantity,
     parseDateTimeBestEffort(sale_date),
-    sale_customer_id,
-    sale_seller_id,
-    sale_product_id,
+    sale_customer_id + (toInt64(extract(_file, ' \((\d+)\)')) * 1000) AS sale_customer_id,
+    sale_seller_id + (toInt64(extract(_file, ' \((\d+)\)')) * 1000) AS sale_seller_id,
+    sale_product_id + (toInt64(extract(_file, ' \((\d+)\)')) * 1000) AS sale_product_id,
     sale_quantity,
     sale_total_price,
     store_name,
