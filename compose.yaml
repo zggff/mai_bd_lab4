@@ -2,9 +2,12 @@ services:
   postgres:
     image: postgres:18
     container_name: postgres_db
+    networks:
+      - data-stack
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
     volumes:
       - ./init_scripts/postgres.sql:/docker-entrypoint-initdb.d/init.sql
       - ./data:/data/
@@ -19,6 +22,8 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server:26.3
     container_name: clickhouse_db
+    networks:
+      - data-stack
     environment:
       CLICKHOUSE_USER: user
       CLICKHOUSE_PASSWORD: password
@@ -33,3 +38,21 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  trino:
+    image: trinodb/trino:480
+    container_name: trino
+    networks:
+      - data-stack
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./trino:/etc/trino
+
+networks:
+  data-stack:
+    driver: bridge
